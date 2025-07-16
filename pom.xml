@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>omni-ai-chat</module>
+        <module>omni-ai-prompt</module>
     </modules>
 
     <properties>

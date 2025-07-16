@@ -1,0 +1,21 @@
+### 创建Prompt
+POST localhost:8081/api/prompts
+Content-Type: application/json
+
+{
+  "id": "prompt_001",
+  "prompt": "You are a helpful assistant",
+  "promptType": "system",
+  "language": "en-US",
+  "tenantId": "tenant_abc",
+  "enabled": true,
+  "isDefault": false,
+  "version": 2,
+  "priority": 90,
+  "description": "A sample system prompt for English users.",
+  "createdBy": "admin",
+  "cacheTtl": 7200
+}
+
+### 查询所有Prompt
+GET localhost:8081/api/prompts

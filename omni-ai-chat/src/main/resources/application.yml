@@ -48,7 +48,10 @@ spring:
     url: jdbc:sqlite:\\OmniAI\\db\\omni_ai.db # 改为数据库路径
     driver-class-name: org.sqlite.JDBC
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
       ddl-auto: update
+      hibernate:
+        use-schema-for-sequence: false
+        use-new-id-generator-mappings: false
     show-sql: true
