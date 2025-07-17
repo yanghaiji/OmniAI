@@ -11,6 +11,7 @@
     <modules>
         <module>omni-ai-chat</module>
         <module>omni-ai-prompt</module>
+        <module>omni-ai-rag</module>
     </modules>
 
     <properties>
