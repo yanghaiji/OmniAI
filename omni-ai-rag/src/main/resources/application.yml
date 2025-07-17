@@ -1,0 +1,22 @@
+server:
+  port: 8083
+#  ai 配置
+
+spring:
+  ai:
+    dashscope:
+      agent:
+        app-id: ${DASHSCOPE_APP_ID}
+      api-key: ${DASHSCOPE_API_KEY}
+      model: qwen-plus
+      #      temperature: 0.7
+      #      max-tokens: 1024
+      #      timeout: 60000
+      embedding:
+        options:
+          model: text-embedding-v4
+    vector-store:
+      pinecone:
+        api-key: ${PINECONE_API_KEY}
+        index-name: omni-ai
+        namespace: Default
