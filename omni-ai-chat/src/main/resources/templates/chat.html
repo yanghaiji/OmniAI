@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Omni AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #f9fafb;
+            --user-msg: #dcfce7;
+            --ai-msg: #f4f4f5;
+            --primary: #4f7bf7;
+            --primary-dark: #3a6af0;
+            --accent: #6c5ce7;
+            --font: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #e0f7fa, #f3e5f5);
+            font-family: var(--font);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header i {
+            font-size: 28px;
+            animation: pulse 2s infinite;
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: 25px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: var(--bg);
+            background-image:
+                radial-gradient(#e2e8f0 1px, transparent 1px),
+                radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+        .msg {
+            padding: 18px 22px;
+            border-radius: 18px;
+            max-width: 85%;
+            white-space: normal;
+            word-wrap: break-word;
+            font-size: 16px;
+            line-height: 1.7;
+            animation: fadeIn 0.3s ease-in;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .user {
+            background: var(--user-msg);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai {
+            background: var(--ai-msg);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-header {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user .msg-header {
+            color: #166534;
+        }
+
+        .ai .msg-header {
+            color: #3f3f46;
+        }
+
+        .msg-content {
+            overflow-x: auto;
+        }
+
+        .msg pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            tab-size: 4;
+        }
+
+        .msg code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(135, 131, 120, 0.15);
+            border-radius: 4px;
+            padding: 2px 5px;
+        }
+
+        .msg ul, .msg ol {
+            padding-left: 25px;
+            margin: 10px 0;
+        }
+
+        .msg li {
+            margin-bottom: 8px;
+        }
+
+        .msg blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 8px 0 8px 16px;
+            margin: 12px 0;
+            color: #4b5563;
+            background: rgba(79, 123, 247, 0.05);
+        }
+
+        .input-area {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            gap: 15px;
+            position: relative;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 20px;
+            padding-right: 50px;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.2);
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            right: 20px;
+            color: #9ca3af;
+            font-size: 18px;
+        }
+
+        button {
+            padding: 16px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(79, 123, 247, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 18px;
+            background: #e5e7eb;
+            border-radius: 14px;
+            align-self: flex-start;
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typing-dot 1.5s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 20px;
+            color: #4b5563;
+            font-size: 15px;
+            margin-top: 20px;
+        }
+
+        .welcome-message h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .welcome-message p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .feature {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            width: 160px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature i {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #6b7280;
+            font-size: 13px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .code-block {
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 95vh;
+                border-radius: 16px;
+            }
+
+            .header {
+                font-size: 20px;
+                padding: 16px;
+            }
+
+            .msg {
+                max-width: 90%;
+                padding: 15px 18px;
+            }
+
+            button {
+                padding: 14px 20px;
+            }
+
+            .input-area {
+                padding: 15px;
+            }
+        }
+
+        @keyframes typing-dot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <i class="fas fa-robot"></i>
+        Omni AI 智能助手
+    </div>
+        <!--        聊天助手 - 欢迎 <span th:text="${username}">用户</span>-->
+    <div id="chat-box">
+        <div class="welcome-message">
+            <h3>👋 欢迎使用 Omni AI 智能助手</h3>
+            <p>我是您的AI助手，可以回答各种问题、协助创作、分析数据等<br>随时问我任何问题！</p>
+
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-book"></i>
+                    <p>学习辅导</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>创意灵感</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-code"></i>
+                    <p>编程帮助</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-pen-fancy"></i>
+                    <p>内容创作</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="input-area">
+        <div class="input-wrapper">
+            <input type="text" id="input" placeholder="输入你的问题..."/>
+            <i class="fas fa-paper-plane"></i>
+        </div>
+        <button id="send-btn" onclick="sendRequest()">
+            <i class="fas fa-paper-plane"></i> 发送
+        </button>
+    </div>
+    <div class="footer">
+        Omni AI 助手 - 安全可靠 · 高效智能
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const username = /*[[${username}]]*/ "anonymous";
+</script>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+
+    let aiMessageElement = null;
+    let aiBuffer = '';
+    let buffer = '';
+
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendUserMessage(text) {
+        const msg = document.createElement('div');
+        msg.className = 'msg user';
+        msg.innerHTML = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">👤 ${username}</div>${text}`;
+        chatBox.appendChild(msg);
+        scrollToBottom();
+    }
+
+    function createAIMessage() {
+        aiMessageElement = document.createElement('div');
+        aiMessageElement.className = 'msg ai';
+        aiMessageElement.innerHTML = 'AI 正在思考...';
+        chatBox.appendChild(aiMessageElement);
+        aiBuffer = '';
+        scrollToBottom();
+    }
+
+    function appendAIMessageContent(content) {
+      if (!aiMessageElement) return;
+      aiBuffer += content;
+
+      const html = marked.parse(aiBuffer);
+      aiMessageElement.innerHTML = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">🤖 OmniAI 助手</div>` + html;
+
+      // 只对当前消息内容里的 <pre><code> 进行高亮
+      aiMessageElement.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+
+      scrollToBottom();
+    }
+
+    function appendAIMessageContent(content) {
+      if (!aiMessageElement) return;
+      aiBuffer += content;
+
+      // Parse the content as Markdown
+      const parsedContent = marked.parse(aiBuffer);
+
+      aiMessageElement.innerHTML = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">🤖 OmniAI 助手</div>${parsedContent}`;
+
+      // Only highlight <pre><code> blocks in the current message
+      aiMessageElement.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+
+      scrollToBottom();
+    }
+
+
+    async function sendRequest() {
+        const userText = input.value.trim();
+        if (!userText) return;
+
+        appendUserMessage(userText);
+        input.value = '';
+        sendBtn.disabled = true;
+
+        const payload = {
+            question: userText,
+            conversationId: username
+        };
+
+        try {
+            const response = await fetch('/chat/ask/stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok || !response.body) {
+                appendAIMessageContent('【系统错误】无法连接服务器');
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            buffer = '';
+            createAIMessage();
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, {stream: true});
+
+                let index;
+                while ((index = buffer.indexOf('\n\n')) !== -1) {
+                    const chunk = buffer.slice(0, index);
+                    buffer = buffer.slice(index + 2);
+
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data:')) {
+                            const data = line.slice(5).trim();
+                            if (data) {
+                                appendAIMessageContent(data);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (buffer.trim()) {
+                const lines = buffer.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const data = line.slice(5).trim();
+                        if (data) {
+                            appendAIMessageContent(data);
+                        }
+                    }
+                }
+            }
+
+        } catch (error) {
+            appendAIMessageContent('【系统异常】' + error.message);
+        } finally {
+            sendBtn.disabled = false;
+        }
+    }
+
+    // 回车发送
+    input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            sendRequest();
+            event.preventDefault();
+        }
+    });
+
+    window.onload = () => input.focus();
+
+       // 初始化输入框焦点
+    window.onload = () => {
+        input.focus();
+
+        // 添加示例问题
+        setTimeout(() => {
+            const questions = [
+                "你能帮我写一个Python爬虫吗？",
+                "解释一下量子计算的基本原理",
+                "如何提高我的工作效率？",
+                "写一个关于太空探险的短故事"
+            ];
+
+            const questionContainer = document.createElement('div');
+            questionContainer.className = 'welcome-message';
+            questionContainer.innerHTML = `
+                <h3>💡 试试问我：</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px;">
+                    ${questions.map(q =>
+                        `<div style="background: white; border-radius: 12px; padding: 10px 15px;
+                         cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.2s;"
+                         onclick="document.getElementById('input').value='${q}'; document.getElementById('input').focus();">
+                         ${q}
+                         </div>`
+                    ).join('')}
+                </div>
+            `;
+
+            chatBox.appendChild(questionContainer);
+            scrollToBottom();
+        }, 1000);
+    };
+</script>
+</body>
+</html>
