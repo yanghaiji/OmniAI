@@ -13,8 +13,8 @@ assistant is able to perform tasks such as:
 OmniAI-chat is a project that aims to create a chat tool for OmniAI. Support login and contextual memory storage
 
 <div style="display: flex; gap: 20px; align-items: center;">
-  <img src="doc/images/login.png" alt="Login" style="width: 450px;"/>
-  <img src="doc/images/chat.png" alt="Chat" style="width: 400px;"/>
+  <img src="doc/images/login.png" alt="Login" style="width: 350px;"/>
+  <img src="doc/images/chat.png" alt="Chat" style="width: 300px;"/>
 </div>
 
 # OmniAI-prompt
