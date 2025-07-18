@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Omni AI</title>
+    <style>
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+          color: #333;
+          overflow: hidden;
+        }
+
+        .login-container {
+          backdrop-filter: blur(10px);
+          background: rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          padding: 2rem 3rem;
+          width: 320px;
+          text-align: center;
+          animation: fadeInUp 1s ease-in-out;
+        }
+
+        h2 {
+          margin-bottom: 1.5rem;
+          font-weight: 600;
+          letter-spacing: 1px;
+          position: relative;
+          color: #2c3e50;
+        }
+
+        h2::after {
+          content: '';
+          display: block;
+          width: 50px;
+          height: 3px;
+          background: linear-gradient(to right, #4facfe, #00f2fe);
+          margin: 0.5rem auto 1rem;
+          border-radius: 2px;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px 16px;
+          margin: 0.6rem 0;
+          border: none;
+          border-radius: 8px;
+          background: #f1f3f5;
+          color: #333;
+          font-size: 1rem;
+          transition: all 0.3s ease;
+        }
+
+        input:focus {
+          outline: none;
+          background: #e9ecef;
+          box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+        }
+
+        button {
+          width: 100%;
+          padding: 12px;
+          margin-top: 1rem;
+          background: linear-gradient(to right, #00c9ff, #92fe9d);
+          border: none;
+          border-radius: 8px;
+          color: #000;
+          font-size: 1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 150, 100, 0.4);
+        }
+
+        .message {
+          margin-top: 1rem;
+          font-size: 0.9rem;
+        }
+
+        .error {
+          color: #e74c3c;
+        }
+
+        .success {
+          color: #27ae60;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>登录</h2>
+    <form method="post">
+        <input name="username" placeholder="用户名" required/>
+        <input type="password" name="password" placeholder="密码" required/>
+        <button type="submit">登录</button>
+    </form>
+
+    <div th:if="${param.error}" class="message error">用户名或密码错误</div>
+    <div th:if="${param.logout}" class="message success">你已退出</div>
+</div>
+
+</body>
+</html>

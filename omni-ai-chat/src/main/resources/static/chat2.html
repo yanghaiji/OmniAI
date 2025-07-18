@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Omni AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+          --bg: #f9fafb;
+          --user-msg: #dcfce7;
+          --ai-msg: #f4f4f5;
+          --primary: #bca4f0;
+          --font: 'Segoe UI', 'Helvetica Neue', sans-serif;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+          background-color: var(--bg);
+          font-family: var(--font);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
+
+        .container {
+          width: 100%;
+          max-width: 800px;
+          height: 95vh;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .header {
+          padding: 20px;
+          font-size: 22px;
+          font-weight: 600;
+          text-align: center;
+          background: #4f7bf7;
+          color: white;
+        }
+
+        #chat-box {
+          flex: 1;
+          padding: 20px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          background: var(--bg);
+        }
+
+        .msg {
+          padding: 14px 18px;
+          border-radius: 16px;
+          max-width: 85%;
+          white-space: normal;
+          word-wrap: break-word;
+          font-size: 15px;
+          line-height: 1.6;
+          animation: fadeIn 0.3s ease-in;
+        }
+
+        .user {
+          background: var(--user-msg);
+          align-self: flex-end;
+        }
+
+        .ai {
+          background: var(--ai-msg);
+          align-self: flex-start;
+        }
+
+        .msg pre {
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 12px;
+          border-radius: 8px;
+          overflow-x: auto;
+        }
+
+        .input-area {
+          display: flex;
+          padding: 16px;
+          border-top: 1px solid #e5e7eb;
+          background: white;
+          gap: 12px;
+        }
+
+        input[type="text"] {
+          flex: 1;
+          padding: 12px 16px;
+          border: 1px solid #d1d5db;
+          border-radius: 10px;
+          font-size: 16px;
+          outline: none;
+          transition: border 0.2s;
+        }
+
+        input[type="text"]:focus {
+          border-color: var(--primary);
+        }
+
+        button {
+          padding: 12px 20px;
+          font-size: 16px;
+          border: none;
+          background: #4f7bf7;
+          color: white;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">Omni AI</div>
+    <div id="chat-box"></div>
+    <div class="input-area">
+        <input type="text" id="input" placeholder="输入你的问题并按 Enter 发送..."/>
+        <button id="send-btn" onclick="sendRequest()">发送</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+
+    let aiMessageElement = null;
+    let aiBuffer = '';
+    let buffer = '';
+
+    function scrollToBottom() {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendUserMessage(text) {
+      const msg = document.createElement('div');
+      msg.className = 'msg user';
+      msg.innerHTML = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">👤 用户</div>${text}`;
+      chatBox.appendChild(msg);
+      scrollToBottom();
+    }
+
+    function createAIMessage() {
+      aiMessageElement = document.createElement('div');
+      aiMessageElement.className = 'msg ai';
+      aiMessageElement.innerHTML = 'AI 正在思考...';
+      chatBox.appendChild(aiMessageElement);
+      aiBuffer = '';
+      scrollToBottom();
+    }
+
+    function appendAIMessageContent(content) {
+      if (!aiMessageElement) return;
+      aiBuffer += content;
+      const html = marked.parse(aiBuffer);
+      aiMessageElement.innerHTML = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">🤖 OmniAI
+      助手</div>` + html;
+      hljs.highlightAll();
+      scrollToBottom();
+    }
+
+    async function sendRequest() {
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      appendUserMessage(userText);
+      input.value = '';
+      sendBtn.disabled = true;
+
+      const payload = {
+        question: userText,
+        conversationId: "2"
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/chat/ask/stream', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok || !response.body) {
+          appendAIMessageContent('【系统错误】无法连接服务器');
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        buffer = '';
+        createAIMessage();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          let index;
+          while ((index = buffer.indexOf('\n\n')) !== -1) {
+            const chunk = buffer.slice(0, index);
+            buffer = buffer.slice(index + 2);
+
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('data:')) {
+                const data = line.slice(5).trim();
+                if (data) {
+                  appendAIMessageContent(data);
+                }
+              }
+            }
+          }
+        }
+
+        if (buffer.trim()) {
+          const lines = buffer.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const data = line.slice(5).trim();
+              if (data) {
+                appendAIMessageContent(data);
+              }
+            }
+          }
+        }
+
+      } catch (error) {
+        appendAIMessageContent('【系统异常】' + error.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    // 回车发送
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        sendRequest();
+        event.preventDefault();
+      }
+    });
+
+    // 初始聚焦输入框
+    window.onload = () => input.focus();
+</script>
+</body>
+</html>

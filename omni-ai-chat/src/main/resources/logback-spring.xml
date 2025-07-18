@@ -32,7 +32,7 @@
     <logger name="com.zaxxer" level="INFO"/>
     <logger name="springfox.documentation" level="INFO"/>
     <logger name="org.springframework.boot" level="INFO"/>
-    <logger name="mybatis-log" level="DEBUG"/>
+    <logger name="org.springframework.ai" level="INFO"/>
 <!--    <root level="DEBUG">-->
     <root level="INFO">
         <appender-ref ref="console"/>

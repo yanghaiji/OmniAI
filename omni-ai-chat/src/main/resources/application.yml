@@ -4,6 +4,9 @@ server:
 
 #  ai 配置
 spring:
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
   ai:
     chat:
       memory:
@@ -17,6 +20,9 @@ spring:
         app-id: ${DASH_SCOPE_APP_ID}
       api-key: ${DASH_SCOPE_API_KEY}
       model: qwen-plus
+      embedding:
+        options:
+          model: text-embedding-v4
       options:
           model: qwen-plus
           temperature: 0.7
@@ -29,6 +35,11 @@ spring:
           stream-interval: 1000
           stream-interval-time: 1000
           stream-interval-time-unit: MILLISECONDS
+    vector-store:
+      pinecone:
+        api-key: &{PINECONE_API_KEY}
+        index-name: omni-ai
+        namespace: Default
 #    openai:
 #      api-key: ${OPENAI_API_KEY}
 #      model: qwen-plus
