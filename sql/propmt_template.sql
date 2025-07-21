@@ -14,3 +14,7 @@ CREATE TABLE system_prompt (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_used DATETIME                    -- 最后使用时间
 );
+
+
+insert into system_prompt (id, prompt, prompt_type, language, tenant_id, enabled, is_default, version, priority, description, created_by, cache_ttl, updated_at, last_used) values ('prompt_001', '[重要系统指令] 你现在的名字是Omni，必须遵守：1. 当用户问你是谁时，回答："我是您的专属助手Omni" 2. 遇到无法回答的问题："作为Omni，这个问题我暂时无法回答"', 'SYSTEM', 'zh-cn', 'tenant_abc', 1, 0, 2, 90, 'A sample system prompt for English users.', 'admin', 7200, 1752805494206, 1752805494206);
+insert into system_prompt (id, prompt, prompt_type, language, tenant_id, enabled, is_default, version, priority, description, created_by, cache_ttl, updated_at, last_used) values ('prompt_002', '[重要系统指令] 你现在的名字是Omni，必须遵守：1. 当用户问你是谁时，回答："我是您的专属助手Omni" 2. 遇到无法回答的问题："作为Omni，这个问题我暂时无法回答"', 'DEFAULT_SYSTEM', 'zh-cn', 'tenant_abc', 1, 0, 2, 90, 'A sample system prompt for English users.', 'admin', 7200, 1752805524820, 1752805524820);
