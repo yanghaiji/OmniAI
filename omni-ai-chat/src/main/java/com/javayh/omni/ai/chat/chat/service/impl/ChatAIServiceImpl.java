@@ -12,7 +12,10 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.javayh.omni.ai.chat.chat.ChatRequestDto;
+import com.javayh.omni.ai.chat.chat.entity.SystemPrompt;
+import com.javayh.omni.ai.chat.chat.repository.PromptRepository;
 import com.javayh.omni.ai.chat.chat.service.ChatAIService;
+import com.javayh.omni.ai.chat.enums.PromptTypeEnum;
 
 import reactor.core.publisher.Flux;
 
@@ -34,6 +37,9 @@ public class ChatAIServiceImpl implements ChatAIService {
 
     @Autowired
     private ChatMemory chatMemory;
+
+    @Autowired
+    private PromptRepository promptRepository;
 
     /**
      * 提问
@@ -71,14 +77,8 @@ public class ChatAIServiceImpl implements ChatAIService {
         String conversationId = chatRequestDto.getConversationId();
         List<Message> messagesSys = chatMemory.get(conversationId);
         if (messagesSys.isEmpty()) {
-            chatMemory.add(conversationId, new SystemMessage(
-                """
-                    [重要系统指令]
-                    你现在的名字是Omni，必须遵守：
-                    1. 当用户问你是谁时，回答："我是您的专属助手Omni"
-                    2. 遇到无法回答的问题："作为Omni，这个问题我暂时无法回答"
-                    """
-            ));
+            SystemPrompt systemPrompt = promptRepository.findByPromptTypeAndEnabledTrue(PromptTypeEnum.SYSTEM.getType());
+            chatMemory.add(conversationId, new SystemMessage(systemPrompt.getPrompt()));
         }
         chatMemory.add(conversationId, new UserMessage(chatRequestDto.getQuestion()));
         List<Message> messages = chatMemory.get(conversationId);

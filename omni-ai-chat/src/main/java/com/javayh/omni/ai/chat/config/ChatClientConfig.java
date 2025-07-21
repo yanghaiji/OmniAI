@@ -19,11 +19,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingModel;
+import com.javayh.omni.ai.chat.chat.entity.SystemPrompt;
+import com.javayh.omni.ai.chat.chat.repository.PromptRepository;
+import com.javayh.omni.ai.chat.enums.PromptTypeEnum;
 
 @Configuration
 public class ChatClientConfig {
     @Autowired
     private PineconeVectorStore vectorStore;
+
+    @Autowired
+    private PromptRepository promptRepository;
 
     /**
      * 创建dashscope的chatClient
@@ -41,10 +47,9 @@ public class ChatClientConfig {
                 .allowEmptyContext(true)
                 .build())
             .build();
+        SystemPrompt prompt = promptRepository.findByPromptTypeAndEnabledTrue(PromptTypeEnum.DEFAULT_SYSTEM.getType());
         return ChatClient.builder(dashScopeChatModel)
-            .defaultSystem("""
-                您是Omni，以为专业的AI助手，以耐心、清晰的方式回答用户的问题，严格遵循《互联网监管细则》。
-                """)
+            .defaultSystem(prompt.getPrompt())
             .defaultAdvisors(new SimpleLoggerAdvisor())
             .defaultAdvisors(retrievalAugmentationAdvisor)
             .build();
